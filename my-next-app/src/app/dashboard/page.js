@@ -1,4 +1,4 @@
-// app/bilty/page.js
+// app/bilty/page.js (Updated)
 'use client';
 
 import { useState } from 'react';
@@ -30,11 +30,13 @@ export default function BiltyPage() {
       if (result.success) {
         setSubmitResult({
           success: true,
-          message: `Bilty successfully created with GR No: ${formData.gr_no}`
+          message: `Bilty #${formData.gr_no} successfully created!`
         });
         
-        // Optional: Reset form or redirect to a new page
-        // You can pass a reset function to the BiltyForm component if needed
+        // Optional: Scroll to top after submission
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // You could add form reset logic here if needed
       } else {
         setSubmitResult({
           success: false, 
@@ -53,21 +55,32 @@ export default function BiltyPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
       <header className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Transport Bilty Entry</h1>
-        <p className="text-gray-600 mt-2">
-          Fill in all the required details to create a new transport bilty.
+        <h1 className="text-3xl font-bold text-shadow-white">Transport Bilty Entry</h1>
+        <p className="text-shadow-white mt-2">
+          Complete the form below to create a new transport bilty. Fields marked with <span className="text-red-600">*</span> are required.
         </p>
       </header>
 
       {submitResult.success !== null && (
         <div 
-          className={`mb-6 p-4 rounded-md ${
-            submitResult.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+          className={`mb-8 p-4 rounded-md ${
+            submitResult.success ? 'bg-green-100 text-green-800 border border-green-400' : 'bg-red-100 text-red-800 border border-red-400'
           }`}
         >
-          <p className="font-medium">{submitResult.message}</p>
+          <div className="flex items-center">
+            {submitResult.success ? (
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            )}
+            <p className="font-semibold">{submitResult.message}</p>
+          </div>
         </div>
       )}
 

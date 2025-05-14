@@ -1,5 +1,5 @@
 // utils/datafetch.js
-import supabase  from '../app/utils/supabase';
+import  supabase  from '../app/utils/supabase';
 
 /**
  * Fetches the latest entry from the transport_bilty table based on a specific field and value
@@ -27,6 +27,30 @@ export const getLatestEntryByField = async (field, value, selectFields = ['*']) 
     return data && data.length > 0 ? data[0] : null;
   } catch (error) {
     console.error('Exception in getLatestEntryByField:', error);
+    return null;
+  }
+};
+
+/**
+ * Fetches the most recent bilty record with all fields
+ * @returns {Promise<Object|null>} - The most recent bilty or null if not found
+ */
+export const getMostRecentBilty = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('transport_bilty')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (error) {
+      console.error('Error fetching most recent bilty:', error);
+      return null;
+    }
+
+    return data && data.length > 0 ? data[0] : null;
+  } catch (error) {
+    console.error('Exception in getMostRecentBilty:', error);
     return null;
   }
 };

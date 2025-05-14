@@ -3,11 +3,11 @@
 
 import { useState, useEffect } from 'react';
 import AutocompleteInput from './Autocomplete';
-import { getLatestEntryByField } from './datafetch';
+import { getLatestEntryByField, getMostRecentBilty } from './datafetch';
 import FormSection from './form-section';
 
 /**
- * Main Bilty form component with autofill functionality
+ * Main Bilty form component with enhanced autofill functionality
  * 
  * @param {Object} props
  * @param {Function} props.onSubmit - Function called when the form is submitted
@@ -55,6 +55,28 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
     
     remarks: '',
   });
+
+  // Load default charges from most recent bilty on component mount
+  useEffect(() => {
+    const loadDefaultCharges = async () => {
+      try {
+        const recentBilty = await getMostRecentBilty();
+        if (recentBilty) {
+          setFormData(prev => ({
+            ...prev,
+            labour_charge: recentBilty.labour_charge || '0',
+            bilty_charge: recentBilty.bilty_charge || '0',
+            toll_tax: recentBilty.toll_tax || '0',
+            pf: recentBilty.pf || '0',
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading default charges:', error);
+      }
+    };
+
+    loadDefaultCharges();
+  }, []);
 
   // Fetch data when city_code changes
   const fetchCityData = async (cityCode) => {
@@ -173,7 +195,7 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 text-gray-950">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* Transport Details Section */}
       <FormSection title="Transport Details">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -184,6 +206,7 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
             onChange={handleChange('gr_no')}
             field="gr_no"
             required
+            placeholder="Enter GR number"
           />
           
           <AutocompleteInput
@@ -194,6 +217,7 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
             onSuggestionSelect={fetchCityData}
             field="city_code"
             required
+            placeholder="Enter city code"
           />
           
           <AutocompleteInput
@@ -203,6 +227,7 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
             onChange={handleChange('city')}
             field="city"
             required
+            placeholder="City name"
           />
           
           <AutocompleteInput
@@ -212,6 +237,7 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
             onChange={handleChange('transport_name')}
             field="transport_name"
             required
+            placeholder="Enter transport name"
           />
           
           <AutocompleteInput
@@ -220,6 +246,7 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
             value={formData.transport_gst}
             onChange={handleChange('transport_gst')}
             field="transport_gst"
+            placeholder="Enter GST number"
           />
           
           <AutocompleteInput
@@ -228,11 +255,12 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
             value={formData.transport_mobile}
             onChange={handleChange('transport_mobile')}
             field="transport_mobile"
+            placeholder="Enter mobile number"
           />
           
           <div className="mb-4">
-            <label htmlFor="bilty_date" className="block text-sm font-medium text-gray-700 mb-1">
-              Bilty Date <span className="text-red-500">*</span>
+            <label htmlFor="bilty_date" className="block text-sm font-medium text-gray-800 mb-1">
+              Bilty Date <span className="text-red-600">*</span>
             </label>
             <input
               id="bilty_date"
@@ -240,7 +268,7 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
               value={formData.bilty_date}
               onChange={(e) => handleChange('bilty_date')(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm text-black focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
             />
           </div>
         </div>
@@ -251,7 +279,7 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Consignor Column */}
           <div className="space-y-4">
-            <h3 className="text-md font-medium text-gray-700">Consignor (Sender)</h3>
+            <h3 className="text-md font-semibold text-gray-800">Consignor (Sender)</h3>
             <AutocompleteInput
               id="consignor_name"
               label="Consignor Name"
@@ -260,6 +288,7 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
               onSuggestionSelect={fetchConsignorData}
               field="consignor_name"
               required
+              placeholder="Enter sender's name"
             />
             
             <AutocompleteInput
@@ -268,6 +297,7 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
               value={formData.consignor_gst}
               onChange={handleChange('consignor_gst')}
               field="consignor_gst"
+              placeholder="Enter GST number"
             />
             
             <AutocompleteInput
@@ -276,12 +306,13 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
               value={formData.consignor_mobile}
               onChange={handleChange('consignor_mobile')}
               field="consignor_mobile"
+              placeholder="Enter mobile number"
             />
           </div>
           
           {/* Consignee Column */}
           <div className="space-y-4">
-            <h3 className="text-md font-medium text-gray-700">Consignee (Receiver)</h3>
+            <h3 className="text-md font-semibold text-gray-800">Consignee (Receiver)</h3>
             <AutocompleteInput
               id="consignee_name"
               label="Consignee Name"
@@ -290,6 +321,7 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
               onSuggestionSelect={fetchConsigneeData}
               field="consignee_name"
               required
+              placeholder="Enter receiver's name"
             />
             
             <AutocompleteInput
@@ -298,6 +330,7 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
               value={formData.consignee_gst}
               onChange={handleChange('consignee_gst')}
               field="consignee_gst"
+              placeholder="Enter GST number"
             />
             
             <AutocompleteInput
@@ -306,6 +339,7 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
               value={formData.consignee_mobile}
               onChange={handleChange('consignee_mobile')}
               field="consignee_mobile"
+              placeholder="Enter mobile number"
             />
           </div>
         </div>
@@ -320,10 +354,11 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
             value={formData.invoice_no}
             onChange={handleChange('invoice_no')}
             field="invoice_no"
+            placeholder="Enter invoice number"
           />
           
           <div className="mb-4">
-            <label htmlFor="invoice_date" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="invoice_date" className="block text-sm font-medium text-gray-800 mb-1">
               Invoice Date
             </label>
             <input
@@ -331,12 +366,12 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
               type="date"
               value={formData.invoice_date}
               onChange={(e) => handleChange('invoice_date')(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm text-black focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
             />
           </div>
           
           <div className="mb-4">
-            <label htmlFor="invoice_value" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="invoice_value" className="block text-sm font-medium text-gray-800 mb-1">
               Invoice Value
             </label>
             <input
@@ -345,7 +380,8 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
               step="0.01"
               value={formData.invoice_value}
               onChange={(e) => handleChange('invoice_value')(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Enter value in INR"
+              className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm text-black focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
             />
           </div>
           
@@ -355,34 +391,27 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
             value={formData.eway_bill_aadhar_pan}
             onChange={handleChange('eway_bill_aadhar_pan')}
             field="eway_bill_aadhar_pan"
+            placeholder="Enter document number"
           />
           
-          <div className="mb-4">
-            <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">
-              Content <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="content"
-              type="text"
-              value={formData.content}
-              onChange={(e) => handleChange('content')(e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
+          <AutocompleteInput
+            id="content"
+            label="Content"
+            value={formData.content}
+            onChange={handleChange('content')}
+            field="content"
+            required
+            placeholder="Enter goods description"
+          />
           
-          <div className="mb-4">
-            <label htmlFor="pvt_marks" className="block text-sm font-medium text-gray-700 mb-1">
-              Private Marks
-            </label>
-            <input
-              id="pvt_marks"
-              type="text"
-              value={formData.pvt_marks}
-              onChange={(e) => handleChange('pvt_marks')(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
+          <AutocompleteInput
+            id="pvt_marks"
+            label="Private Marks"
+            value={formData.pvt_marks}
+            onChange={handleChange('pvt_marks')}
+            field="pvt_marks"
+            placeholder="Enter private marks"
+          />
         </div>
       </FormSection>
 
@@ -390,8 +419,8 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
       <FormSection title="Freight Details">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="mb-4">
-            <label htmlFor="weight" className="block text-sm font-medium text-gray-700 mb-1">
-              Weight (kg) <span className="text-red-500">*</span>
+            <label htmlFor="weight" className="block text-sm font-medium text-gray-800 mb-1">
+              Weight (kg) <span className="text-red-600">*</span>
             </label>
             <input
               id="weight"
@@ -400,13 +429,14 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
               value={formData.weight}
               onChange={(e) => handleChange('weight')(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Enter weight in kg"
+              className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm text-black focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
             />
           </div>
           
           <div className="mb-4">
-            <label htmlFor="no_of_packages" className="block text-sm font-medium text-gray-700 mb-1">
-              No. of Packages <span className="text-red-500">*</span>
+            <label htmlFor="no_of_packages" className="block text-sm font-medium text-gray-800 mb-1">
+              No. of Packages <span className="text-red-600">*</span>
             </label>
             <input
               id="no_of_packages"
@@ -414,13 +444,14 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
               value={formData.no_of_packages}
               onChange={(e) => handleChange('no_of_packages')(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Enter number of packages"
+              className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm text-black focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
             />
           </div>
           
           <div className="mb-4">
-            <label htmlFor="rate" className="block text-sm font-medium text-gray-700 mb-1">
-              Rate (per kg) <span className="text-red-500">*</span>
+            <label htmlFor="rate" className="block text-sm font-medium text-gray-800 mb-1">
+              Rate (per kg) <span className="text-red-600">*</span>
             </label>
             <input
               id="rate"
@@ -429,13 +460,15 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
               value={formData.rate}
               onChange={(e) => handleChange('rate')(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Enter rate per kg"
+              // BiltyForm.js (continued from previous artifact)
+              className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm text-black focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
             />
           </div>
           
           <div className="mb-4">
-            <label htmlFor="freight_amount" className="block text-sm font-medium text-gray-700 mb-1">
-              Freight Amount <span className="text-red-500">*</span>
+            <label htmlFor="freight_amount" className="block text-sm font-medium text-gray-800 mb-1">
+              Freight Amount <span className="text-red-600">*</span>
             </label>
             <input
               id="freight_amount"
@@ -445,20 +478,20 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
               onChange={(e) => handleChange('freight_amount')(e.target.value)}
               required
               readOnly
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border border-gray-400 rounded-md bg-gray-100 shadow-sm text-black font-medium focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
             />
           </div>
           
           <div className="mb-4">
-            <label htmlFor="payment_mode" className="block text-sm font-medium text-gray-700 mb-1">
-              Payment Mode <span className="text-red-500">*</span>
+            <label htmlFor="payment_mode" className="block text-sm font-medium text-gray-800 mb-1">
+              Payment Mode <span className="text-red-600">*</span>
             </label>
             <select
               id="payment_mode"
               value={formData.payment_mode}
               onChange={(e) => handleChange('payment_mode')(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm text-black focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
             >
               <option value="paid">Paid</option>
               <option value="to-pay">To-Pay</option>
@@ -467,15 +500,15 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
           </div>
           
           <div className="mb-4">
-            <label htmlFor="delivery_type" className="block text-sm font-medium text-gray-700 mb-1">
-              Delivery Type <span className="text-red-500">*</span>
+            <label htmlFor="delivery_type" className="block text-sm font-medium text-gray-800 mb-1">
+              Delivery Type <span className="text-red-600">*</span>
             </label>
             <select
               id="delivery_type"
               value={formData.delivery_type}
               onChange={(e) => handleChange('delivery_type')(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm text-black focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
             >
               <option value="door-delivery">Door Delivery</option>
               <option value="godown-delivery">Godown Delivery</option>
@@ -484,26 +517,26 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
         </div>
 
         {/* Additional Charges */}
-        <div className="mt-4">
-          <h4 className="text-md font-medium text-gray-700 mb-3">Additional Charges</h4>
+        <div className="mt-6">
+          <h4 className="text-md font-semibold text-gray-800 mb-3">Additional Charges</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="mb-4">
-              <label htmlFor="labour_charge" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="labour_charge" className="block text-sm font-medium text-gray-800 mb-1">
                 Labour Charge
               </label>
               <input
                 id="labour_charge"
                 type="number"
                 step="0.01"
-                // components/BiltyForm.js (continued from previous artifact)
                 value={formData.labour_charge}
                 onChange={(e) => handleChange('labour_charge')(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="0.00"
+                className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm text-black focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
               />
             </div>
             
             <div className="mb-4">
-              <label htmlFor="bilty_charge" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="bilty_charge" className="block text-sm font-medium text-gray-800 mb-1">
                 Bilty Charge
               </label>
               <input
@@ -512,12 +545,13 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
                 step="0.01"
                 value={formData.bilty_charge}
                 onChange={(e) => handleChange('bilty_charge')(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="0.00"
+                className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm text-black focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
               />
             </div>
             
             <div className="mb-4">
-              <label htmlFor="toll_tax" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="toll_tax" className="block text-sm font-medium text-gray-800 mb-1">
                 Toll Tax
               </label>
               <input
@@ -526,12 +560,13 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
                 step="0.01"
                 value={formData.toll_tax}
                 onChange={(e) => handleChange('toll_tax')(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="0.00"
+                className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm text-black focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
               />
             </div>
             
             <div className="mb-4">
-              <label htmlFor="pf" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="pf" className="block text-sm font-medium text-gray-800 mb-1">
                 P.F.
               </label>
               <input
@@ -540,12 +575,13 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
                 step="0.01"
                 value={formData.pf}
                 onChange={(e) => handleChange('pf')(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="0.00"
+                className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm text-black focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
               />
             </div>
             
             <div className="mb-4">
-              <label htmlFor="other_charge" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="other_charge" className="block text-sm font-medium text-gray-800 mb-1">
                 Other Charge
               </label>
               <input
@@ -554,13 +590,14 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
                 step="0.01"
                 value={formData.other_charge}
                 onChange={(e) => handleChange('other_charge')(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="0.00"
+                className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm text-black focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
               />
             </div>
           </div>
           
-          <div className="mt-4">
-            <label htmlFor="total_amount" className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="mt-6">
+            <label htmlFor="total_amount" className="block text-lg font-semibold text-gray-800 mb-2">
               Total Amount
             </label>
             <input
@@ -569,7 +606,7 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
               step="0.01"
               value={formData.total_amount}
               readOnly
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 font-bold"
+              className="w-full px-4 py-3 border-2 border-gray-500 rounded-md bg-gray-100 shadow-md text-black text-lg font-bold focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
             />
           </div>
         </div>
@@ -578,7 +615,7 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
       {/* Remarks Section */}
       <FormSection title="Additional Information">
         <div className="mb-4">
-          <label htmlFor="remarks" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="remarks" className="block text-sm font-medium text-gray-800 mb-1">
             Remarks
           </label>
           <textarea
@@ -586,7 +623,8 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
             value={formData.remarks}
             onChange={(e) => handleChange('remarks')(e.target.value)}
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="Enter any additional notes or remarks"
+            className="w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm text-black focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
           ></textarea>
         </div>
       </FormSection>
@@ -596,8 +634,8 @@ const BiltyForm = ({ onSubmit, isSubmitting = false }) => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`px-6 py-2 rounded-md text-white font-medium ${
-            isSubmitting ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700'
+          className={`px-6 py-3 rounded-md text-white font-medium text-lg ${
+            isSubmitting ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
           }`}
         >
           {isSubmitting ? 'Saving...' : 'Save Bilty'}

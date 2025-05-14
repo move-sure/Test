@@ -1,3 +1,4 @@
+// components/AutocompleteInput.js
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -17,6 +18,7 @@ import { getSuggestions } from './datafetch';
  * @param {Function} props.onBlur - Optional callback for blur events
  * @param {Function} props.onSuggestionSelect - Optional callback when a suggestion is selected
  * @param {string} props.className - Additional CSS classes for the input
+ * @param {boolean} props.readOnly - Whether the input is read-only
  */
 const AutocompleteInput = ({
   id,
@@ -29,6 +31,7 @@ const AutocompleteInput = ({
   onBlur = null,
   onSuggestionSelect = null,
   className = '',
+  readOnly = false,
 }) => {
   const [inputValue, setInputValue] = useState(value || '');
   const [suggestions, setSuggestions] = useState([]);
@@ -57,7 +60,7 @@ const AutocompleteInput = ({
   }, []);
 
   const fetchSuggestions = async (input) => {
-    if (!input || input.length < 2) {
+    if (!input || input.length < 2 || readOnly) {
       setSuggestions([]);
       return;
     }
@@ -78,6 +81,8 @@ const AutocompleteInput = ({
     const newValue = e.target.value;
     setInputValue(newValue);
     onChange(newValue);
+
+    if (readOnly) return;
 
     // Clear previous timer
     if (debounceTimerRef.current) {
@@ -119,8 +124,8 @@ const AutocompleteInput = ({
   return (
     <div className="relative mb-4">
       {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
-          {label} {required && <span className="text-red-500">*</span>}
+        <label htmlFor={id} className="block text-sm font-medium text-gray-800 mb-1">
+          {label} {required && <span className="text-red-600">*</span>}
         </label>
       )}
       <div className="relative" ref={suggestionRef}>
@@ -130,23 +135,24 @@ const AutocompleteInput = ({
           value={inputValue}
           onChange={handleInputChange}
           onBlur={handleBlur}
-          onFocus={() => inputValue.length > 1 && fetchSuggestions(inputValue)}
+          onFocus={() => !readOnly && inputValue.length > 1 && fetchSuggestions(inputValue)}
           placeholder={placeholder}
           required={required}
-          className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${className}`}
+          readOnly={readOnly}
+          className={`w-full px-3 py-2 border ${readOnly ? 'bg-gray-100' : 'bg-white'} border-gray-400 text-black rounded-md shadow-sm focus:outline-none focus:ring-indigo-600 focus:border-indigo-600 ${className}`}
         />
         {isLoading && (
           <div className="absolute right-3 top-2.5">
-            <div className="animate-spin h-4 w-4 border-2 border-gray-500 border-t-transparent rounded-full"></div>
+            <div className="animate-spin h-4 w-4 border-2 border-gray-600 border-t-transparent rounded-full"></div>
           </div>
         )}
-        {isOpen && suggestions.length > 0 && (
-          <ul className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base overflow-auto focus:outline-none sm:text-sm">
+        {isOpen && suggestions.length > 0 && !readOnly && (
+          <ul className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base overflow-auto focus:outline-none sm:text-sm border border-gray-300">
             {suggestions.map((suggestion, index) => (
               <li
                 key={index}
                 onClick={() => handleSuggestionClick(suggestion)}
-                className="cursor-pointer hover:bg-gray-100 px-4 py-2"
+                className="cursor-pointer hover:bg-indigo-50 px-4 py-2 text-black"
               >
                 {suggestion}
               </li>
