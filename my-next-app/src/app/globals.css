@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 30, 58, 138;
+  --background-end-rgb: 255, 255, 255;
 }
 
 @theme inline {
@@ -20,7 +27,29 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom right,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+  min-height: 100vh;
+  background-image: 
+    radial-gradient(at 40% 20%, rgba(30, 58, 138, 1) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, rgba(59, 130, 246, 0.3) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, rgba(30, 58, 138, 0.8) 0px, transparent 50%),
+    radial-gradient(at 80% 50%, rgba(59, 130, 246, 0.2) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(30, 58, 138, 0.8) 0px, transparent 50%),
+    radial-gradient(at 80% 100%, rgba(59, 130, 246, 0.3) 0px, transparent 50%);
+  background-size: cover;
+  background-attachment: fixed;
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.glass-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
 }
